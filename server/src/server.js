@@ -5,11 +5,9 @@ import config from "./config/app-config.js";
 
 const startServer = async () => {
   try {
-    // Test database connection
     await pool.query("SELECT 1");
     logger.info("Database connected");
 
-    // Start server
     const server = app.listen(config.port, () => {
       console.log("\n" + "=".repeat(50));
       console.log("🚀  SERVER STARTED SUCCESSFULLY");
@@ -24,7 +22,6 @@ const startServer = async () => {
       logger.info(`Server running on port ${config.port}`);
     });
 
-    // Graceful shutdown
     const gracefulShutdown = (signal) => {
       logger.info(`${signal} received. Shutting down gracefully...`);
       

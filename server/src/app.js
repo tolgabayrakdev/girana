@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Server is running" });
 });
 
-// API routes
+//api routes
 app.use(`${config.apiPrefix}/${config.apiVersion}/auth`, authRoutes);
 
 app.use(errorHandler);

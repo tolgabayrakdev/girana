@@ -1,19 +1,6 @@
 import pool from '../config/database.js';
 
 export default class UserRepository {
-  async create(userData) {
-    const { firstName, lastName, email, phone, password } = userData;
-    
-    const query = `
-      INSERT INTO users (first_name, last_name, email, phone, password)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, first_name, last_name, email, phone, is_verified, created_at
-    `;
-    
-    const result = await pool.query(query, [firstName, lastName, email, phone, password]);
-    return result.rows[0];
-  }
-
   async findById(id) {
     const query = `
       SELECT id, first_name, last_name, email, phone, is_verified, 
@@ -52,7 +39,22 @@ export default class UserRepository {
     return result.rows[0];
   }
 
-  async update(id, updateData) {
+  async create(userData, client = null) {
+    const { firstName, lastName, email, phone, password } = userData;
+    const dbClient = client || pool;
+    
+    const query = `
+      INSERT INTO users (first_name, last_name, email, phone, password)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, first_name, last_name, email, phone, is_verified, created_at
+    `;
+    
+    const result = await dbClient.query(query, [firstName, lastName, email, phone, password]);
+    return result.rows[0];
+  }
+
+  async update(id, updateData, client = null) {
+    const dbClient = client || pool;
     const fields = [];
     const values = [];
     let paramCount = 1;
@@ -80,17 +82,20 @@ export default class UserRepository {
                 email_verified, phone_verified, is_banned, updated_at
     `;
 
-    const result = await pool.query(query, values);
+    const result = await dbClient.query(query, values);
     return result.rows[0];
   }
 
-  async delete(id) {
+  async delete(id, client = null) {
+    const dbClient = client || pool;
     const query = 'DELETE FROM users WHERE id = $1 RETURNING id';
-    const result = await pool.query(query, [id]);
+    const result = await dbClient.query(query, [id]);
     return result.rows[0];
   }
 
-  async updateEmailVerification(id, isVerified, token = null) {
+  async updateEmailVerification(id, isVerified, token = null, client = null) {
+    const dbClient = client || pool;
+    
     const query = `
       UPDATE users
       SET email_verified = $1,
@@ -101,11 +106,13 @@ export default class UserRepository {
       RETURNING id, email, email_verified
     `;
     
-    const result = await pool.query(query, [isVerified, token, id]);
+    const result = await dbClient.query(query, [isVerified, token, id]);
     return result.rows[0];
   }
 
-  async updatePhoneVerification(id, isVerified, token = null) {
+  async updatePhoneVerification(id, isVerified, token = null, client = null) {
+    const dbClient = client || pool;
+    
     const query = `
       UPDATE users
       SET phone_verified = $1,
@@ -116,7 +123,7 @@ export default class UserRepository {
       RETURNING id, phone, phone_verified
     `;
     
-    const result = await pool.query(query, [isVerified, token, id]);
+    const result = await dbClient.query(query, [isVerified, token, id]);
     return result.rows[0];
   }
 }
